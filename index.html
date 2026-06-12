@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShopDot | B2B Drop-shipping Dashboard</title>
+    <!-- Google Fonts: Outfit & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Premium Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js for Business Metrics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- CSS Stylesheet -->
+    <link rel="stylesheet" href="/static/index.css">
+</head>
+<body>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Navigation Header -->
+    <header class="navbar">
+        <div class="nav-container">
+            <a href="#" class="brand" onclick="navigate('catalog')">
+                <i class="fa-solid fa-cube logo-icon"></i>
+                <span class="brand-text">Shop<span class="accent-text">Dot</span></span>
+            </a>
+            
+            <nav class="nav-menu" id="nav-menu">
+                <a href="#" class="nav-link active" id="link-catalog" onclick="navigate('catalog')">
+                    <i class="fa-solid fa-store"></i> Catalog
+                </a>
+                <a href="#" class="nav-link" id="link-orders" onclick="navigate('orders')">
+                    <i class="fa-solid fa-receipt"></i> Orders
+                </a>
+                <a href="#" class="nav-link" id="link-analytics" onclick="navigate('analytics')">
+                    <i class="fa-solid fa-chart-line"></i> Analytics
+                </a>
+            </nav>
+            
+            <div class="nav-auth" id="nav-auth-section">
+                <!-- Injected via JavaScript -->
+                <button class="btn btn-primary btn-sm" onclick="showAuthModal()"><i class="fa-solid fa-right-to-bracket"></i> Login</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="main-content">
+        
+        <!-- ==================== AUTH VIEW ==================== -->
+        <section id="view-auth" class="auth-section card hidden">
+            <div class="auth-tabs">
+                <button class="auth-tab active" id="tab-login" onclick="toggleAuthTab('login')">Sign In</button>
+                <button class="auth-tab" id="tab-register" onclick="toggleAuthTab('register')">Sign Up</button>
+            </div>
+            
+            <!-- Login Form -->
+            <form id="form-login" class="auth-form" onsubmit="handleLogin(event)">
+                <h3 class="form-title">Welcome Back</h3>
+                <p class="form-subtitle">Enter your B2B account details to continue</p>
+                <div class="form-group">
+                    <label for="login-email"><i class="fa-solid fa-envelope"></i> Email Address</label>
+                    <input type="email" id="login-email" required placeholder="retailer@shopdot.com">
+                </div>
+                <div class="form-group">
+                    <label for="login-password"><i class="fa-solid fa-lock"></i> Password</label>
+                    <input type="password" id="login-password" required placeholder="••••••••">
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Sign In <i class="fa-solid fa-arrow-right-to-bracket"></i></button>
+            </form>
+            
+            <!-- Register Form -->
+            <form id="form-register" class="auth-form hidden" onsubmit="handleRegister(event)">
+                <h3 class="form-title">Create B2B Account</h3>
+                <p class="form-subtitle">Join the ShopDot drop-shipping network</p>
+                <div class="form-group">
+                    <label for="register-email"><i class="fa-solid fa-envelope"></i> Email Address</label>
+                    <input type="email" id="register-email" required placeholder="email@address.com">
+                </div>
+                <div class="form-group">
+                    <label for="register-password"><i class="fa-solid fa-lock"></i> Password</label>
+                    <input type="password" id="register-password" required placeholder="Min 6 characters">
+                </div>
+                <div class="form-group">
+                    <label for="register-role"><i class="fa-solid fa-user-gear"></i> Account Role</label>
+                    <select id="register-role" onchange="toggleSupplierFields()" required>
+                        <option value="retailer">Retailer (Drop-shipper)</option>
+                        <option value="supplier">Supplier (Brand Owner)</option>
+                    </select>
+                </div>
+                <div class="form-group hidden" id="group-brand">
+                    <label for="register-brand"><i class="fa-solid fa-tag"></i> Supplier Brand Name</label>
+                    <input type="text" id="register-brand" placeholder="e.g. Aura Goods Co.">
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Sign Up <i class="fa-solid fa-user-plus"></i></button>
+            </form>
+        </section>
+
+        <!-- ==================== CATALOG VIEW ==================== -->
+        <section id="view-catalog" class="catalog-section">
+            <div class="view-header">
+                <div>
+                    <h1 class="page-title">Product Catalog</h1>
+                    <p class="page-subtitle">Browse wholesale items and check supplier stocks</p>
+                </div>
+                <div class="actions" id="catalog-actions">
+                    <!-- Injected for Suppliers: Add Product Button -->
+                </div>
+            </div>
+            
+            <!-- Search & Filters -->
+            <div class="filter-bar card">
+                <div class="search-input-wrapper">
+                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                    <input type="text" id="search-input" placeholder="Search products by title..." oninput="fetchProducts()">
+                </div>
+                <div class="filter-select-wrapper">
+                    <i class="fa-solid fa-filter filter-icon"></i>
+                    <input type="text" id="supplier-filter" placeholder="Filter by brand supplier..." oninput="fetchProducts()">
+                </div>
+            </div>
+            
+            <!-- Product Grid -->
+            <div id="product-grid" class="product-grid">
+                <!-- Dynamic Product Cards Injected Here -->
+            </div>
+        </section>
+
+        <!-- ==================== ORDERS VIEW ==================== -->
+        <section id="view-orders" class="orders-section hidden">
+            <div class="view-header">
+                <div>
+                    <h1 class="page-title">Order Shipments</h1>
+                    <p class="page-subtitle">Track routed drop-ship orders and fulfillment statuses</p>
+                </div>
+            </div>
+            
+            <div class="card table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Product Info</th>
+                            <th>Quantity</th>
+                            <th>Total Cost</th>
+                            <th id="th-partner">Partner</th>
+                            <th>Status</th>
+                            <th>Last Updated</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="orders-tbody">
+                        <!-- Dynamic Order Rows Injected Here -->
+                    </tbody>
+                </table>
+                <div id="no-orders-message" class="empty-state hidden">
+                    <i class="fa-solid fa-box-open empty-icon"></i>
+                    <p>No orders recorded in this database yet.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== ANALYTICS VIEW ==================== -->
+        <section id="view-analytics" class="analytics-section hidden">
+            <div class="view-header">
+                <div>
+                    <h1 class="page-title">Performance Analytics</h1>
+                    <p class="page-subtitle">Track total earnings, spends, and business metrics</p>
+                </div>
+            </div>
+            
+            <!-- Metrics Cards Grid -->
+            <div class="metrics-grid" id="metrics-grid">
+                <!-- Metrics Dynamic Cards Injected Here -->
+            </div>
+            
+            <!-- Financial Chart Container -->
+            <div class="chart-container card">
+                <h3 class="chart-title"><i class="fa-solid fa-chart-simple"></i> Business Volume Trends</h3>
+                <div class="canvas-wrapper">
+                    <canvas id="businessChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ==================== MODALS ==================== -->
+    
+    <!-- Order Product Modal -->
+    <div id="modal-order" class="modal-overlay hidden">
+        <div class="modal card animate-scale">
+            <div class="modal-header">
+                <h3>Place Purchase Order</h3>
+                <button class="close-btn" onclick="closeModal('order')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="order-product-preview">
+                    <h4 id="order-modal-title">Product Name</h4>
+                    <p id="order-modal-sku" class="sku-badge">SKU</p>
+                    <p class="price-display">Price: <span class="accent-text" id="order-modal-price">$0.00</span></p>
+                </div>
+                <form onsubmit="handlePlaceOrder(event)">
+                    <input type="hidden" id="order-modal-id">
+                    <div class="form-group">
+                        <label for="order-quantity">Select Quantity</label>
+                        <div class="quantity-input-wrapper">
+                            <button type="button" class="qty-btn" onclick="adjustQty(-1)"><i class="fa-solid fa-minus"></i></button>
+                            <input type="number" id="order-quantity" value="1" min="1" required readonly>
+                            <button type="button" class="qty-btn" onclick="adjustQty(1)"><i class="fa-solid fa-plus"></i></button>
+                        </div>
+                        <p class="stock-warning" id="order-modal-stock">Available: 0 items</p>
+                    </div>
+                    <div class="order-summary">
+                        <span>Grand Total:</span>
+                        <span class="total-price-text" id="order-modal-total">$0.00</span>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">Confirm Drop-ship Order <i class="fa-solid fa-truck-fast"></i></button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Form Modal (Add / Edit) -->
+    <div id="modal-product" class="modal-overlay hidden">
+        <div class="modal card animate-scale">
+            <div class="modal-header">
+                <h3 id="product-modal-title-text">Add Product Details</h3>
+                <button class="close-btn" onclick="closeModal('product')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="form-product" onsubmit="handleProductFormSubmit(event)">
+                    <input type="hidden" id="product-modal-id">
+                    <div class="form-group">
+                        <label for="product-name">Product Name</label>
+                        <input type="text" id="product-name" required placeholder="Premium Ceramic Coffee Mug">
+                    </div>
+                    <div class="form-group">
+                        <label for="product-sku">SKU Code</label>
+                        <input type="text" id="product-sku" required placeholder="MG-CRMC-02">
+                    </div>
+                    <div class="form-group">
+                        <label for="product-price">Wholesale Price ($)</label>
+                        <input type="number" id="product-price" step="0.01" min="0.01" required placeholder="18.50">
+                    </div>
+                    <div class="form-group">
+                        <label for="product-stock">Stock Quantity</label>
+                        <input type="number" id="product-stock" min="0" required placeholder="50">
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block" id="product-modal-submit-btn">Save Product <i class="fa-solid fa-circle-check"></i></button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Controller -->
+    <script src="/static/app.js"></script>
+</body>
+</html>
